@@ -1,8 +1,10 @@
-let canvas = document.getElementById('c1');
-let ctx = canvas.getContext('2d');
-let div = document.getElementById('main');
-let tileSize = 45;
-let arr = [
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const canvasSide = 540;
+const victoryScreen = document.getElementById("victory-screen");
+const tileSize = 45;
+const keys = ["arrowup", "arrowdown", "arrowright", "arrowleft"];
+const arr = [
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
   [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0],
@@ -16,115 +18,122 @@ let arr = [
   [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 ];
+const image = new Image();
+
+ctx.drawImage(image, 0, 0, canvasSide, canvasSide);
+ctx.canvas.height = canvasSide;
+ctx.canvas.width = canvasSide;
 
 let victory = false;
-let player = {
+const player = {
   x: 90,
   y: 90,
 };
 
 const spawnPlayer = () => {
-  if (victory == true) {
-    return;
-  } else {
     const { x, y } = player;
     const image = new Image();
     image.onload = () => {
       ctx.drawImage(image, x, y, tileSize, tileSize);
     };
-    image.src = './tileset/player.png';
-  }
+    image.src = "./tileset/player.png";
 };
 
-function draw() {
-  if (victory == true) {
-    return;
-  } else {
-    let imagePath = '';
+function getAsset(name) {
+  return name ? `./tileset/${name}.png` : '';
+}
+
+function render() {
+    let  imageName = "";
     arr.forEach((element, j) => {
-      let y = tileSize * j;
+      const y = tileSize * j;
       element.forEach((item, i) => {
-        let x = tileSize * i;
+        const x = tileSize * i;
         const image = new Image();
         switch (item) {
           case 0:
-            imagePath = 'wall';
+            imageName = "wall";
             break;
           case 1:
-            imagePath = 'floor';
+            imageName = "floor";
             break;
           case 2:
-            imagePath = 'exit';
+            imageName = "exit";
             break;
         }
         image.onload = () => {
           ctx.drawImage(image, x, y, tileSize, tileSize);
         };
-        image.src = imagePath ? `./tileset/${imagePath}.png` : '';
+        image.src = getAsset(imageName);
       });
     });
+    spawnPlayer();
   }
-}
 
 const win = () => {
   victory = true;
-  div.innerHTML = 'You Win! =)';
-  div.className = 'congrats';
+  victoryScreen.className = "active";
+  victoryScreen.innerHTML = "You Win! =)";
   ctx.beginPath();
-  ctx.clearRect(0, 0, 540, 540);
+  ctx.clearRect(0, 0, canvasSide, canvasSide);
   const image = new Image();
-     image.onload = () => {
-      ctx.drawImage(image, 0, 0, 540, 550);
-    };
-  image.src = './tileset/victory.png';
+  image.onload = () => {
+    ctx.drawImage(image, 0, 0, canvasSide, canvasSide);
+  };
+  image.src = "./tileset/victory.png";
   ctx.closePath();
 };
 
-document.onkeydown = (event) => {
-  switch (event.key.toLowerCase()) {
-    case 'arrowup':
-      if (arr[(player.y - tileSize) / tileSize][player.x / tileSize] != 0) {
-        player.y -= tileSize;
-      }
-      if (arr[player.y / tileSize][player.x / tileSize] == 2) {
-        setTimeout(win,700);
-      }
-      draw();
-      spawnPlayer();
-      break;
-    case 'arrowdown':
-      if (arr[(player.y + tileSize) / tileSize][player.x / tileSize] != 0) {
-        player.y += tileSize;
-      }
-      if (arr[player.y / tileSize][player.x / tileSize] == 2) {
-        setTimeout(win,700);
-        
-      }
-      draw();
-      spawnPlayer();
-      break;
-    case 'arrowright':
-      if (arr[player.y / tileSize][(player.x + tileSize) / tileSize] != 0) {
-        player.x += tileSize;
-      }
-      if (arr[player.y / tileSize][player.x / tileSize] == 2) {
-        setTimeout(win,700);
-      }
-      draw();
-      spawnPlayer();
-      break;
-    case 'arrowleft':
-      if (arr[player.y / tileSize][(player.x - tileSize) / tileSize] != 0) {
-        player.x -= tileSize;
-      }
-      if (arr[player.y / tileSize][player.x / tileSize] == 2) {
-        setTimeout(win,700);
-      }
-      draw();
-      spawnPlayer();
-      break;
+
+document.onkeydown = ({ key = "" }) => {
+  if (keys.includes(key.toLowerCase())) {
+    switch (key.toLowerCase()) {
+      case keys[0]:
+        if (arr[(player.y - tileSize) / tileSize][player.x / tileSize] !== 0) {
+          player.y -= tileSize;
+        }
+        if (!victory) {
+          render();
+        }
+        if (arr[player.y / tileSize][player.x / tileSize] === 2) {
+          setTimeout(win, 700);
+        }
+        break;
+      case keys[1]:
+        if (arr[(player.y + tileSize) / tileSize][player.x / tileSize] != 0) {
+          player.y += tileSize;
+        }
+        if (!victory) {
+          render();
+        }
+        if (arr[player.y / tileSize][player.x / tileSize] === 2) {
+          setTimeout(win, 700);
+        }
+        break;
+      case keys[2]:
+        if (arr[player.y / tileSize][(player.x + tileSize) / tileSize] != 0) {
+          player.x += tileSize;
+        }
+        if (!victory) {
+          render();
+        }
+        if (arr[player.y / tileSize][player.x / tileSize] === 2) {
+          setTimeout(win, 700);
+        }
+        break;
+      case keys[3]:
+        if (arr[player.y / tileSize][(player.x - tileSize) / tileSize] != 0) {
+          player.x -= tileSize;
+        }
+        if (!victory) {
+          render();
+        }
+        if (arr[player.y / tileSize][player.x / tileSize] === 2) {
+          setTimeout(win, 700);
+          break;
+        }
+    }
   }
 };
 
-draw();
-spawnPlayer(2, 2);
+render();

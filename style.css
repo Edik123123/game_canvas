@@ -22,8 +22,15 @@ canvas {
   }
 }
 
-.active {
+#victory-screen {
+  display: none;
+}
+
+#victory-screen.active {
   display: block;
+}
+
+.active {
   animation: slideDown 3.5s;
   position: fixed;
   width: 450px;
